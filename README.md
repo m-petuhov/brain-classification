@@ -16,14 +16,10 @@
 ```
 
 ## Installation
-Install packages from requirements.txt \
-`pip install -r requirements.txt`
 
-## Experiments
-#### Brain segmentation
-- [Brain image processing tools using Deep Learning focused on speed and accuracy.](https://github.com/iitzco/deepbrain) -
-very bad
-- 
+1. Download the datasets and place it in the main directory.
+2. Install packages from requirements.txt. \
+`pip install -r requirements.txt`
 
 ## Guides
 

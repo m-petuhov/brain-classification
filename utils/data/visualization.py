@@ -34,7 +34,14 @@ def show_slices(image, plt, plane='axial', rows=6, cols=6, figsize=(18, 18)):
 
     fig, ax = plt.subplots(rows, cols, figsize=figsize)
     n_slices = rows * cols
-    depth = image.shape[2]
+
+    if plane == 'sagittal':
+        depth = image.shape[2]
+    elif plane == 'coronal':
+        depth = image.shape[1]
+    else:
+        depth = image.shape[0]
+
     step = depth // n_slices
     ind = 0
 
@@ -53,35 +60,37 @@ def show_slices(image, plt, plane='axial', rows=6, cols=6, figsize=(18, 18)):
     plt.show()
 
 
-def show_slices_from2images(image1, image2, plt, plane='axial', rows=6, cols=6, figsize=(18, 18)):
+def show_slices_from_images(n_images, images, titles, plt, plane='axial', rows=6, cols=6, figsize=(18, 18)):
     if plane not in ['axial', 'sagittal', 'coronal']:
         raise NameError(f"{plane} is not correct; correct modes: {['axial', 'sagittal', 'coronal']}")
-    elif rows % 2 != 0 or cols % 2 != 0:
-        raise ValueError("Rows and cols should be even numbers")
-    elif image1.shape != image2.shape:
-        raise ValueError("Images shape should be equals")
+    elif rows % n_images != 0 or cols % n_images != 0:
+        raise ValueError("Rows and cols should be divided by the number of n_images")
 
     fig, ax = plt.subplots(rows, cols, figsize=figsize)
-    n_slices = int(rows * cols / 2)
-    depth = image1.shape[2]
+    n_slices = int(rows * cols / n_images)
+
+    if plane == 'sagittal':
+        depth = images[0].shape[2]
+    elif plane == 'coronal':
+        depth = images[0].shape[1]
+    else:
+        depth = images[0].shape[0]
+
     step = depth // n_slices
     ind = 0
 
     for i in range(0, depth, step):
-        if plane == 'sagittal':
-            ax[min(ind // rows, rows - 1), ind % cols].imshow(np.rot90(cv2.resize(image1[:, :, i], (224, 224)), 2), cmap='gray')
-            ax[min(ind // rows, rows - 1), ind % cols + 1].imshow(np.rot90(cv2.resize(image2[:, :, i], (224, 224)), 2), cmap='gray')
-        elif plane == 'coronal':
-            ax[min(ind // rows, rows - 1), ind % cols].imshow(np.rot90(cv2.resize(image1[:, i, :], (224, 224)), 2), cmap='gray')
-            ax[min(ind // rows, rows - 1), ind % cols + 1].imshow(np.rot90(cv2.resize(image2[:, i, :], (224, 224)), 2), cmap='gray')
-        else:
-            ax[min(ind // rows, rows - 1), ind % cols].imshow(np.rot90(cv2.resize(image1[i, :, :], (224, 224)), 2), cmap='gray')
-            ax[min(ind // rows, rows - 1), ind % cols + 1].imshow(np.rot90(cv2.resize(image2[i, :, :], (224, 224)), 2), cmap='gray')
+        for j, image in enumerate(images):
+            if plane == 'sagittal':
+                ax[min(ind // rows, rows - 1), ind % cols + j].imshow(np.rot90(cv2.resize(image[:, :, i], (224, 224)), 2), cmap='gray')
+            elif plane == 'coronal':
+                ax[min(ind // rows, rows - 1), ind % cols + j].imshow(np.rot90(cv2.resize(image[:, i, :], (224, 224)), 2), cmap='gray')
+            else:
+                ax[min(ind // rows, rows - 1), ind % cols + j].imshow(np.rot90(cv2.resize(image[i, :, :], (224, 224)), 2), cmap='gray')
 
-        ax[min(ind // rows, rows - 1), ind % cols].set_title('Image 1 slice %d' % i)
-        ax[min(ind // rows, rows - 1), ind % cols].axis('off')
-        ax[min(ind // rows, rows - 1), ind % cols + 1].set_title('Image 2 slice %d' % i)
-        ax[min(ind // rows, rows - 1), ind % cols + 1].axis('off')
-        ind += 2
+            ax[min(ind // rows, rows - 1), ind % cols + j].set_title(f'{titles[j]}({i})')
+            ax[min(ind // rows, rows - 1), ind % cols + j].axis('off')
+
+        ind += n_images
 
     plt.show()
